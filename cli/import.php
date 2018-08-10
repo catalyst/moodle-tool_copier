@@ -27,6 +27,7 @@ define('CLI_SCRIPT', true);
 
 require(__DIR__.'/../../../../config.php');
 require_once($CFG->libdir.'/clilib.php');
+require_once($CFG->dirroot . '/course/externallib.php');
 
 // Get the cli options.
 list($options, $unrecognized) = cli_get_params(array(
@@ -40,17 +41,27 @@ $help =
 "
 Help message for tool_copier cli script.
 
-Please include a list of options and associated actions.
+Options:
+-s, --source         The source Moodle id of the course to copy from.
+-d, --dest           The destination Moodle id of the course to copy to.
+-f, --file           A correctly formatted csv file (see README) to use.
+-h, --help           Print out this help.
 
-Please include an example of usage.
+Example:
+\$sudo -u www-data /usr/bin/php admin/tool/copier/cli/import.php\n
 ";
 
 if ($unrecognized) {
     $unrecognized = implode("\n\t", $unrecognized);
-    cli_error(get_string('cliunknownoption', 'admin', $unrecognized);
+    cli_error(get_string('cliunknownoption', 'admin', $unrecognized));
 }
 
 if ($options['help']) {
     cli_writeln($help);
     die();
 }
+
+// Call the core course import webservice that copies data between courses.
+core_course_external::import_course($importfrom, $importto);
+
+exit(0);
