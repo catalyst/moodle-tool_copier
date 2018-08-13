@@ -31,9 +31,17 @@ require_once($CFG->dirroot . '/course/externallib.php');
 
 // Get the cli options.
 list($options, $unrecognized) = cli_get_params(array(
-    'help' => false
+        'source' => '',
+        'dest' => '',
+        'file' => '',
+        'user' => '',
+        'help' => false
 ),
 array(
+    's' => 'source',
+    'd' => 'dest',
+    'f' => 'file',
+    'u' => 'user',
     'h' => 'help'
 ));
 
@@ -42,10 +50,11 @@ $help =
 Help message for tool_copier cli script.
 
 Options:
--s, --source         The source Moodle id of the course to copy from.
--d, --dest           The destination Moodle id of the course to copy to.
--f, --file           A correctly formatted csv file (see README) to use.
--h, --help           Print out this help.
+-s, --source    The source Moodle id of the course to copy from.
+-d, --dest      The destination Moodle id of the course to copy to.
+-f, --file      A correctly formatted csv file (see README) to use.
+-u, --user      The user to perform the action as. (Must have perms to copy courses etc.)
+-h, --help      Print out this help.
 
 Example:
 \$sudo -u www-data /usr/bin/php admin/tool/copier/cli/import.php\n
@@ -61,7 +70,29 @@ if ($options['help']) {
     die();
 }
 
-// Call the core course import webservice that copies data between courses.
-core_course_external::import_course($importfrom, $importto);
+// Log in as the supplied user.
+// This feels bad, but there isn't really any other way to do it.
+if ($options['user']) {
+    global $DB;
+    $user = $DB->get_record('user', array('id' => 2), '*', MUST_EXIST);
+    enrol_check_plugins($user);
+    \core\session\manager::set_user($user);
+    set_login_session_preferences();
+} else {
+    cli_writeln($help);
+    exit(1);
+}
+
+// If file has been provided parse it. If not take source and dest options.
+if ($options['file']) {
+    cli_writeln('we are processing a file of courses');
+} elseif ($options['source'] && $options['dest']) {
+    cli_writeln('we are processing a single course');
+    // Call the core course import webservice that copies data between courses.
+    core_course_external::import_course($options['source'], $options['dest']);
+} else {
+    cli_writeln($help);
+}
+
 
 exit(0);

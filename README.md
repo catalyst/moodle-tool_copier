@@ -1,2 +1,2 @@
-# moodle-tool_copier
-A plugin that allows copying of Moodle courses via cli
+# Moodle Tool Copier
+A plugin that allows copying and importing of Moodle courses via cli
