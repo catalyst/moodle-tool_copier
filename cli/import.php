@@ -57,7 +57,7 @@ Options:
 -h, --help      Print out this help.
 
 Example:
-\$sudo -u www-data /usr/bin/php admin/tool/copier/cli/import.php\n
+\$sudo -u www-data /usr/bin/php admin/tool/copier/cli/import.php  --user=2 --file='test.csv'\n
 ";
 
 if ($unrecognized) {
@@ -85,9 +85,37 @@ if ($options['user']) {
 
 // If file has been provided parse it. If not take source and dest options.
 if ($options['file']) {
-    cli_writeln('we are processing a file of courses');
-} elseif ($options['source'] && $options['dest']) {
-    cli_writeln('we are processing a single course');
+    cli_writeln('We are processing a file of courses');
+
+    // Check source file exists.
+    $filename = trim($options['file']);
+    $fp = fopen($filename, 'r');
+    $count = 0;
+
+    if ($fp) {
+        // Go through CSV file line by line extracting data and inserting into database.
+        while (($data = fgetcsv($fp)) !== false) {
+
+            $source = $data[0]; // Column 1 is the source course ID.
+            $dest = $data[1];  // Column 2 is the destination course ID.
+
+            // Call the core course import webservice that copies data between courses.
+            core_course_external::import_course($source, $dest);
+
+            $count++;
+
+        }
+
+        echo "\n" . 'Processed: ' . $count . ' courses' . "\n";
+        fclose($fp);
+    } else {
+        echo 'Unable to open file at location: ' . $filename;
+        echo "\n";
+        exit(1);
+    }
+
+} else if ($options['source'] && $options['dest']) {
+    cli_writeln('We are processing a single course');
     // Call the core course import webservice that copies data between courses.
     core_course_external::import_course($options['source'], $options['dest']);
 } else {
