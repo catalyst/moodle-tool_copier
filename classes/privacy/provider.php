@@ -15,15 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin strings are defined here.
+ * Privacy Subsystem implementation for tool_copier.
  *
- * @package     tool_copier
- * @category    string
- * @copyright   Matt Porritt <mattp@catalyst-au.net>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    tool_copier
+ * @copyright  2019 Nathan Nguyen <nathannguyen@catalyst-net.au>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace tool_copier\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Tool Copier';
-$string['privacy:metadata'] = 'Tool Copier does not store any personal data.';
+/**
+ * The tool_copier does not store any personal data.
+ *
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}
